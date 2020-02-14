@@ -1,6 +1,7 @@
 from os import path
 from configparser import ConfigParser
 from buyer import Buyer
+import csv
 
 
 def get_users():
@@ -23,3 +24,7 @@ def get_users():
         raise IOError
 
     return users
+
+
+def create_csv(data_dict: dict):
+    pass

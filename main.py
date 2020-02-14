@@ -9,20 +9,15 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 log.addHandler(fh)
 
-rows = []
+data_dict = dict()
 
 if __name__ == '__main__':
     log.info('Started')
     users = get_users()
 
     for user in users:
-        camps = user.get_camps()
-        log.debug(f'{user.name=} {camps=}')
-        user.generate_rows(camps, rows)
-        log.debug(f'rows after append {rows}')
+        user.generate_report(data_dict)
 
-    sheets.insert_rows(rows)
+    log.debug(f'dict after process {data_dict}')
+    # sheets.insert_rows(rows)
     log.info('Closed')
-
-# TODO добавить группировку по ад сетам и крео
-# TODO изменить логику вставки в таблицы

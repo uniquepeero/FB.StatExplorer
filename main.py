@@ -1,6 +1,6 @@
 import sheets
 import logging
-from utils import get_users
+import utils
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -13,11 +13,14 @@ data_dict = dict()
 
 if __name__ == '__main__':
     log.info('Started')
-    users = get_users()
+    users = utils.get_users()
 
     for user in users:
-        user.generate_report(data_dict)
+        data_dict[user.name] = user.generate_report()
 
-    log.debug(f'dict after process {data_dict}')
-    # sheets.insert_rows(rows)
+    log.debug(f'Dict after process {data_dict}')
+
+    csv = utils.create_csv(data_dict)
+    sheets.client.import_csv(sheets.sheet.id, csv)
+
     log.info('Closed')

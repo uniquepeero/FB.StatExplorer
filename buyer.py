@@ -81,15 +81,22 @@ class Buyer:
             sleep(20)
             self._get_stat(path, path_id)
 
-    def generate_report(self, data_dict: dict):
+    def generate_report(self):
         time = datetime.now(_moscow).strftime("%d.%m.%Y %H:%M")
 
         camps = self._get_ids('campaigns')
         adsets = self._get_ids('adsets')
         ads = self._get_ids('ads')
+        acc_names = []
+
+        adsets_dict = {}
+        camps_dict = {}
+        user_dict = {}
+        if adsets is not None:
+            for adset in adsets:
+                adsets_dict[adset] = {}
 
         if ads is not None:
-            adsets_dict = {}
             for ad in ads:
                 ad_data = self._get_stat('ad', ad)
                 log.debug(f'{ad=} : {ad_data=}')
@@ -111,35 +118,39 @@ class Buyer:
 
                     cost_per_click = 0
                     if clicks > 0:
-                        cost_per_click = spend / clicks
+                        cost_per_click = round(spend / clicks, 2)
                     cost_per_install = 0
                     if user_actions['mobile_app_install'] > 0:
-                        cost_per_install = spend / user_actions['mobile_app_install']
+                        cost_per_install = round(spend / user_actions['mobile_app_install'], 2)
                     cost_per_reg = 0
                     if user_actions['app_custom_event.fb_mobile_complete_registration'] > 0:
-                        cost_per_reg = spend / user_actions[
-                            'app_custom_event.fb_mobile_complete_registration']
+                        cost_per_reg = round(spend / user_actions[
+                            'app_custom_event.fb_mobile_complete_registration'], 2)
                     cost_per_purchase = 0
                     if user_actions['app_custom_event.fb_mobile_purchase'] > 0:
-                        cost_per_purchase = spend / user_actions['app_custom_event.fb_mobile_purchase']
+                        cost_per_purchase = round(spend / user_actions['app_custom_event.fb_mobile_purchase'], 2)
 
                     adsets_dict[ad_data['adset_id']][ad] = {
-                                'Ad name': ad_data['ad_name'],
-                                'Clicks': clicks,
-                                'Spend': spend,
-                                'Cost per click': cost_per_click,
-                                'Installs': user_actions['mobile_app_install'],
-                                'Cost per install': cost_per_install,
-                                'Registrations': user_actions['app_custom_event.fb_mobile_complete_registration'],
-                                'Cost per registration': cost_per_reg,
-                                'Purchases': user_actions['app_custom_event.fb_mobile_purchase'],
-                                'Cost per purchase': cost_per_purchase
-                     }
+                            'Ad name': ad_data['ad_name'],
+                            'Clicks': clicks,
+                            'Spend': spend,
+                            'Cost per click': cost_per_click,
+                            'Installs': user_actions['mobile_app_install'],
+                            'Cost per install': cost_per_install,
+                            'Registrations': user_actions['app_custom_event.fb_mobile_complete_registration'],
+                            'Cost per registration': cost_per_reg,
+                            'Purchases': user_actions['app_custom_event.fb_mobile_purchase'],
+                            'Cost per purchase': cost_per_purchase
+                    }
+                    acc_names.append(ad_data['account_name'])
+                    log.debug(f'Processed {ad} for {ad_data["adset_id"]}\n{adsets_dict}')
                 else:
                     log.debug(f'Empty response ({ad}): {ad_data=}')
 
-        if adsets is not None:
-            camps_dict = dict()
+        if adsets_dict and camps:
+            for camp in camps:
+                camps_dict[camp] = {}
+
             for adset in adsets:
                 adset_data = self._get_stat('adset', adset)
                 log.debug(f'{adset=} : {adset_data=}')
@@ -161,17 +172,16 @@ class Buyer:
 
                     cost_per_click = 0
                     if clicks > 0:
-                        cost_per_click = spend / clicks
+                        cost_per_click = round(spend / clicks, 2)
                     cost_per_install = 0
                     if user_actions['mobile_app_install'] > 0:
-                        cost_per_install = spend / user_actions['mobile_app_install']
+                        cost_per_install = round(spend / user_actions['mobile_app_install'], 2)
                     cost_per_reg = 0
                     if user_actions['app_custom_event.fb_mobile_complete_registration'] > 0:
-                        cost_per_reg = spend / user_actions[
-                            'app_custom_event.fb_mobile_complete_registration']
+                        cost_per_reg = round(spend / user_actions['app_custom_event.fb_mobile_complete_registration'], 2)
                     cost_per_purchase = 0
                     if user_actions['app_custom_event.fb_mobile_purchase'] > 0:
-                        cost_per_purchase = spend / user_actions['app_custom_event.fb_mobile_purchase']
+                        cost_per_purchase = round(spend / user_actions['app_custom_event.fb_mobile_purchase'], 2)
                     try:
                         camps_dict[adset_data['campaign_id']][adset] = {
                                     'Adset name': adset_data['adset_name'],
@@ -186,13 +196,16 @@ class Buyer:
                                     'Cost per purchase': cost_per_purchase,
                                     'Ads': adsets_dict[adset]
                         }
+                        log.debug(f'Processed {adset} for {adset_data["campaign_id"]}\n{camps_dict}')
                     except KeyError as e:
                         log.error(f'{e} not found {adsets_dict=}')
                 else:
                     log.debug(f'Empty response ({adset}): {adset_data=}')
 
-        if camps is not None:
-            user_dict = dict()
+        if camps_dict and acc_names:
+
+            for acc_name in acc_names:
+                user_dict[acc_name] = {}
 
             for camp in camps:
                 camp_data = self._get_stat('campaign', camp)
@@ -215,17 +228,16 @@ class Buyer:
 
                     cost_per_click = 0
                     if clicks > 0:
-                        cost_per_click = spend / clicks
+                        cost_per_click = round(spend / clicks, 2)
                     cost_per_install = 0
                     if user_actions['mobile_app_install'] > 0:
-                        cost_per_install = spend / user_actions['mobile_app_install']
+                        cost_per_install = round(spend / user_actions['mobile_app_install'], 2)
                     cost_per_reg = 0
                     if user_actions['app_custom_event.fb_mobile_complete_registration'] > 0:
-                        cost_per_reg = spend / user_actions[
-                            'app_custom_event.fb_mobile_complete_registration']
+                        cost_per_reg = round(spend / user_actions['app_custom_event.fb_mobile_complete_registration'], 2)
                     cost_per_purchase = 0
                     if user_actions['app_custom_event.fb_mobile_purchase'] > 0:
-                        cost_per_purchase = spend / user_actions['app_custom_event.fb_mobile_purchase']
+                        cost_per_purchase = round(spend / user_actions['app_custom_event.fb_mobile_purchase'], 2)
                     try:
                         user_dict[camp_data["account_name"]][camp] = {
                                     'Campaign name': camp_data['campaign_name'],
@@ -240,10 +252,13 @@ class Buyer:
                                     'Cost per purchase': cost_per_purchase,
                                     'AdSets': camps_dict[camp]
                         }
+                        log.debug(f'Processed {camp} for {camp_data["account_name"]}\n{user_dict}')
                     except KeyError as e:
                         log.error(f'{e} not found {camps_dict=}')
                 else:
                     log.debug(f'Empty response ({camp}): {camp_data=}')
-        data_dict = {
-            self.name: user_dict
-        }
+
+        if user_dict:
+            return user_dict
+        else:
+            return None

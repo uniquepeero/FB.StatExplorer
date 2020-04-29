@@ -2,3 +2,4 @@
 *.json
 *.cfg
 *.csv
+__pycache__

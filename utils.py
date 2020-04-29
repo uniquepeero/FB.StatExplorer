@@ -4,7 +4,7 @@ from buyer import Buyer
 import csv
 
 
-def get_users():
+def get_users() -> list:
     users = []
     if path.isfile('cfg/users.cfg') and path.isfile('cfg/names.cfg'):
         with open('cfg/names.cfg', 'r') as names_file:
@@ -20,8 +20,7 @@ def get_users():
             }
             users.append(Buyer(name, token, ad_acc, proxies))
     else:
-        # log.critical('Config file not found')
-        raise IOError
+        raise IOError('Config file ./cfg/users.cfg or ./cfg/names.cfg not found')
 
     return users
 
